@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>현장 사진 업로더</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 40px);
+        }
+        
+        .login-box {
+            max-width: 400px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        .login-box h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .login-box h2 {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .version {
+            font-size: 14px;
+            color: #999;
+            font-weight: 400;
+            margin-left: 5px;
+        }
+        
+        .login-subtitle {
+            color: #667eea;
+            margin-bottom: 35px;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px;
+            background: #f0f0ff;
+            border-radius: 8px;
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        
+        .login-button:hover {
+            background: #5568d3;
+        }
+        
+        .login-button:active {
+            transform: scale(0.98);
+        }
+        
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+        }
+        
+        .key-button {
+            padding: 12px;
+            background: #f0f0f0;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+        }
+        
+        .key-button:hover {
+            background: #e0e0e0;
+            transform: scale(1.05);
+        }
+        
+        .key-button:active {
+            background: #d0d0d0;
+            transform: scale(0.95);
+        }
+        
+        .key-button.clear {
+            background: #ff9500;
+            color: white;
+            border-color: #ff9500;
+            font-size: 14px;
+        }
+        
+        .key-button.clear:hover {
+            background: #e68600;
+        }
+        
+        .key-button.delete {
+            background: #ff3b30;
+            color: white;
+            border-color: #ff3b30;
+            font-size: 18px;
+        }
+        
+        .key-button.delete:hover {
+            background: #e02020;
+        }
+        
+        .error-message {
+            color: #ff3b30;
+            font-size: 14px;
+            margin-top: 15px;
+            min-height: 20px;
+            font-weight: 500;
+        }
+        
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 12px 15px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        
+        .user-info span {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .logout-button {
+            padding: 8px 16px;
+            background: #ff3b30;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .logout-button:hover {
+            background: #e02020;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 20px;
+            line-height: 1.4;
+        }
+        
+        h1 .version {
+            font-size: 13px;
+            color: #999;
+            font-weight: 400;
+        }
+        
+        .subtitle {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 15px;
+            font-weight: 600;
+            border-left: 4px solid #667eea;
+            padding-left: 12px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        select, input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            background: white;
+        }
+        
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .custom-input {
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .custom-input.show {
+            display: block;
+        }
+        
+        .camera-section {
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .camera-button {
+            width: 100%;
+            padding: 15px;
+            background: #FF3B30;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .camera-button:hover {
+            background: #E02020;
+        }
+        
+        .camera-button:active {
+            transform: scale(0.98);
+        }
+        
+        .camera-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .gallery-button {
+            width: 100%;
+            padding: 15px;
+            background: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .gallery-button:hover {
+            background: #0051D5;
+        }
+        
+        .gallery-button:active {
+            transform: scale(0.98);
+        }
+        
+        .gallery-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .preview-section {
+            margin-top: 20px;
+        }
+        
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-top: 15px;
+        }
+        
+        .preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .preview-item .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(255, 59, 48, 0.9);
+            color: white;
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .preview-item .time-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px;
+            font-size: 8px;
+            text-align: center;
+        }
+        
+        .upload-button {
+            width: 100%;
+            padding: 15px;
+            background: #FF9500;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 20px;
+        }
+        
+        .upload-button:hover {
+            background: #E68600;
+        }
+        
+        .upload-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .folder-preview {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .folder-preview h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .folder-preview .folder-name {
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .success-message {
+            background: #34c759;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .photo-count {
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <h1>📸 (주)탑이앤씨</h1>
+            <h2>현장사진 업로더 <span class="version">V1.2</span></h2>
+            <p class="login-subtitle">당신의 안전이 우리 모두의 안전입니다.</p>
+            
+            <div class="form-group">
+                <label for="password">🔒 비밀번호</label>
+                <input type="password" id="password" placeholder="비밀번호를 입력하세요" readonly>
+            </div>
+            
+            <div class="keypad">
+                <button class="key-button" data-key="1">1</button>
+                <button class="key-button" data-key="2">2</button>
+                <button class="key-button" data-key="3">3</button>
+                <button class="key-button" data-key="4">4</button>
+                <button class="key-button" data-key="5">5</button>
+                <button class="key-button" data-key="6">6</button>
+                <button class="key-button" data-key="7">7</button>
+                <button class="key-button" data-key="8">8</button>
+                <button class="key-button" data-key="9">9</button>
+                <button class="key-button clear" data-key="clear">지우기</button>
+                <button class="key-button" data-key="0">0</button>
+                <button class="key-button delete" data-key="delete">←</button>
+            </div>
+            
+            <button class="login-button" id="loginBtn">
+                로그인
+            </button>
+            
+            <div class="error-message" id="errorMessage"></div>
+        </div>
+    </div>
+
+    <div class="container" id="mainContainer" style="display: none;">
+        <div class="user-info">
+            <span>🔒 로그인됨</span>
+            <button class="logout-button" id="logoutBtn">로그아웃</button>
+        </div>
+        
+        <h1>📸 (주)탑이앤씨 현장사진 업로더 <span class="version">V1.2</span></h1>
+        <p class="subtitle">당신의 안전이 우리 모두의 안전입니다.</p>
+        
+        <div class="form-group">
+            <label for="locationCategory">📍 위치 카테고리</label>
+            <select id="locationCategory">
+                <option value="">카테고리를 선택하세요</option>
+                <option value="underpass">지하차도</option>
+                <option value="overpass">육교</option>
+                <option value="eco-overpass">생태육교</option>
+                <option value="footbridge">인도교</option>
+                <option value="etc">기타</option>
+            </select>
+        </div>
+        
+        <div class="form-group" id="locationDetailGroup" style="display: none;">
+            <label for="locationDetail">📍 세부 위치</label>
+            <select id="locationDetail">
+                <option value="">세부 위치를 선택하세요</option>
+            </select>
+            <input type="text" id="customLocation" class="custom-input" placeholder="위치를 입력하세요">
+        </div>
+        
+        <div class="form-group">
+            <label for="workType">🔧 작업 유형</label>
+            <select id="workType">
+                <option value="">작업 유형을 선택하세요</option>
+                <option value="시설물 점검">시설물 점검</option>
+                <option value="환경정비">환경정비</option>
+                <option value="차선통제">차선통제</option>
+                <option value="현장답사">현장답사</option>
+                <option value="custom">직접 입력</option>
+            </select>
+            <input type="text" id="customWork" class="custom-input" placeholder="작업 유형을 입력하세요">
+        </div>
+        
+        <div class="folder-preview" id="folderPreview" style="display:none;">
+            <h3>📁 생성될 폴더명</h3>
+            <div class="folder-name" id="folderName"></div>
+        </div>
+        
+        <div class="camera-section">
+            <button class="camera-button" id="cameraBtn" disabled>
+                <span>📸</span>
+                <span>바로 찍어 올리기</span>
+            </button>
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" multiple>
+            
+            <button class="gallery-button" id="galleryBtn" disabled>
+                <span>🖼️</span>
+                <span>앨범에서 선택하기</span>
+            </button>
+            <input type="file" id="galleryInput" accept="image/*" multiple>
+        </div>
+        
+        <div class="preview-section">
+            <div class="photo-count" id="photoCount" style="display:none;"></div>
+            <div class="preview-grid" id="previewGrid"></div>
+        </div>
+        
+        <button class="upload-button" id="uploadBtn" disabled>
+            드라이브에 업로드하기
+        </button>
+        
+        <div class="success-message" id="successMessage">
+            ✅ 업로드 완료! <span id="uploadedCount"></span>장의 사진이 저장되었습니다.
+        </div>
+    </div>
+
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script>
+        // Google Drive API 설정
+        const CLIENT_ID = '664008371178-05g5feth04d5qnh9qejhqpjmvm8utcd1.apps.googleusercontent.com';
+        const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        
+        let gapiInited = false;
+        let gisInited = false;
+        let tokenClient;
+        let accessToken = null;
+        
+        // Google API 초기화
+        function gapiLoaded() {
+            gapi.load('client', initializeGapiClient);
+        }
+        
+        async function initializeGapiClient() {
+            try {
+                await gapi.client.init({
+                    discoveryDocs: DISCOVERY_DOCS,
+                });
+                gapiInited = true;
+                console.log('GAPI 초기화 완료');
+            } catch (err) {
+                console.error('GAPI 초기화 오류:', err);
+            }
+        }
+        
+        function gisLoaded() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: '', // 나중에 설정
+            });
+            gisInited = true;
+            console.log('GIS 초기화 완료');
+        }
+        
+        // Google 로그인 및 권한 요청
+        function handleAuthClick() {
+            return new Promise((resolve, reject) => {
+                tokenClient.callback = async (resp) => {
+                    if (resp.error !== undefined) {
+                        reject(resp);
+                        return;
+                    }
+                    accessToken = gapi.client.getToken().access_token;
+                    console.log('Google Drive 인증 완료!');
+                    resolve();
+                };
+
+                if (gapi.client.getToken() === null) {
+                    tokenClient.requestAccessToken({prompt: 'consent'});
+                } else {
+                    tokenClient.requestAccessToken({prompt: ''});
+                }
+            });
+        }
+        
+        // Google Drive에 폴더 생성 또는 찾기
+        async function findOrCreateFolder(folderName) {
+            try {
+                // 폴더 검색
+                const response = await gapi.client.drive.files.list({
+                    q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+                    fields: 'files(id, name)',
+                });
+                
+                if (response.result.files && response.result.files.length > 0) {
+                    // 폴더가 이미 있으면 해당 ID 반환
+                    console.log('기존 폴더 찾음:', response.result.files[0].id);
+                    return response.result.files[0].id;
+                } else {
+                    // 폴더 생성
+                    const folderMetadata = {
+                        name: folderName,
+                        mimeType: 'application/vnd.google-apps.folder'
+                    };
+                    
+                    const folder = await gapi.client.drive.files.create({
+                        resource: folderMetadata,
+                        fields: 'id'
+                    });
+                    
+                    console.log('새 폴더 생성:', folder.result.id);
+                    return folder.result.id;
+                }
+            } catch (err) {
+                console.error('폴더 생성/찾기 오류:', err);
+                throw err;
+            }
+        }
+        
+        // Google Drive에 파일 업로드
+        async function uploadFileToFolder(file, fileName, folderId) {
+            const metadata = {
+                name: fileName,
+                parents: [folderId]
+            };
+            
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('file', file);
+            
+            const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST',
+                headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+                body: form,
+            });
+            
+            if (!response.ok) {
+                throw new Error(`업로드 실패: ${response.status} ${response.statusText}`);
+            }
+            
+            return response.json();
+        }
+        
+        // 실제 Google Drive 업로드 함수
+        async function uploadToGoogleDrive() {
+            try {
+                // 폴더명 가져오기
+                const folderNameText = folderName.textContent;
+                console.log('업로드 시작 - 폴더:', folderNameText);
+                
+                // 폴더 찾기 또는 생성
+                const folderId = await findOrCreateFolder(folderNameText);
+                console.log('폴더 ID:', folderId);
+                
+                // 현재 위치와 작업 유형 가져오기
+                let location = locationDetail.value;
+                if (location === 'custom') {
+                    location = customLocationInput.value.trim();
+                }
+                
+                let workType = workTypeSelect.value;
+                if (workType === 'custom') {
+                    workType = customWorkInput.value.trim();
+                }
+                
+                // 각 사진 업로드
+                for (let i = 0; i < photos.length; i++) {
+                    const photo = photos[i];
+                    const hours = String(photo.time.getHours()).padStart(2, '0');
+                    const minutes = String(photo.time.getMinutes()).padStart(2, '0');
+                    const timeStr = `${hours}${minutes}`;
+                    const fileNumber = String(i + 1).padStart(3, '0');
+                    const fileName = `${location}_${workType}_${timeStr}_${fileNumber}.jpg`;
+                    
+                    console.log(`업로드 중 (${i + 1}/${photos.length}): ${fileName}`);
+                    await uploadFileToFolder(photo.file, fileName, folderId);
+                }
+                
+                console.log('모든 파일 업로드 완료!');
+                
+                // 성공 메시지
+                uploadedCount.textContent = photos.length;
+                successMessage.classList.add('show');
+                
+                // 초기화
+                setTimeout(function() {
+                    photos = [];
+                    renderPhotos();
+                    uploadBtn.textContent = '드라이브에 업로드하기';
+                    uploadBtn.disabled = false;
+                    
+                    setTimeout(function() {
+                        successMessage.classList.remove('show');
+                    }, 3000);
+                }, 1500);
+                
+            } catch (err) {
+                console.error('업로드 오류:', err);
+                alert('업로드 중 오류가 발생했습니다: ' + err.message);
+                uploadBtn.textContent = '드라이브에 업로드하기';
+                uploadBtn.disabled = false;
+            }
+        }
+        
+        // 메인 비밀번호
+        const MASTER_PASSWORD = '0353';
+        
+        const loginContainer = document.getElementById('loginContainer');
+        const mainContainer = document.getElementById('mainContainer');
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const passwordInput = document.getElementById('password');
+        const errorMessage = document.getElementById('errorMessage');
+        const keyButtons = document.querySelectorAll('.key-button');
+        
+        let passwordValue = '';
+        
+        // 숫자 키패드 클릭 이벤트
+        keyButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const key = this.getAttribute('data-key');
+                
+                if (key === 'clear') {
+                    // 전체 지우기
+                    passwordValue = '';
+                    passwordInput.value = '';
+                    errorMessage.textContent = '';
+                } else if (key === 'delete') {
+                    // 한 글자 지우기
+                    passwordValue = passwordValue.slice(0, -1);
+                    passwordInput.value = '•'.repeat(passwordValue.length);
+                    errorMessage.textContent = '';
+                } else {
+                    // 숫자 입력
+                    if (passwordValue.length < 10) {  // 최대 10자리
+                        passwordValue += key;
+                        passwordInput.value = '•'.repeat(passwordValue.length);
+                        errorMessage.textContent = '';
+                    }
+                }
+            });
+        });
+        
+        // 로그인 버튼 클릭
+        loginBtn.addEventListener('click', function() {
+            if (!passwordValue) {
+                errorMessage.textContent = '⚠️ 비밀번호를 입력하세요';
+                return;
+            }
+            
+            if (passwordValue === MASTER_PASSWORD) {
+                // 로그인 성공
+                loginContainer.style.display = 'none';
+                mainContainer.style.display = 'block';
+                errorMessage.textContent = '';
+                passwordValue = '';
+                passwordInput.value = '';
+            } else {
+                // 로그인 실패
+                errorMessage.textContent = '⚠️ 비밀번호가 올바르지 않습니다';
+                passwordValue = '';
+                passwordInput.value = '';
+            }
+        });
+        
+        // 로그아웃 버튼 클릭
+        logoutBtn.addEventListener('click', function() {
+            passwordValue = '';
+            passwordInput.value = '';
+            loginContainer.style.display = 'flex';
+            mainContainer.style.display = 'none';
+            
+            // 데이터 초기화
+            photos = [];
+            renderPhotos();
+            locationCategory.value = '';
+            locationDetail.value = '';
+            locationDetailGroup.style.display = 'none';
+            workTypeSelect.value = '';
+            customLocationInput.value = '';
+            customWorkInput.value = '';
+            customLocationInput.classList.remove('show');
+            customWorkInput.classList.remove('show');
+            folderPreview.style.display = 'none';
+            cameraBtn.disabled = true;
+            galleryBtn.disabled = true;
+            uploadBtn.disabled = true;
+        });
+        
+        const locationCategory = document.getElementById('locationCategory');
+        const locationDetailGroup = document.getElementById('locationDetailGroup');
+        const locationDetail = document.getElementById('locationDetail');
+        const customLocationInput = document.getElementById('customLocation');
+        const workTypeSelect = document.getElementById('workType');
+        const customWorkInput = document.getElementById('customWork');
+        const folderPreview = document.getElementById('folderPreview');
+        const folderName = document.getElementById('folderName');
+        const cameraBtn = document.getElementById('cameraBtn');
+        const galleryBtn = document.getElementById('galleryBtn');
+        const cameraInput = document.getElementById('cameraInput');
+        const galleryInput = document.getElementById('galleryInput');
+        const previewGrid = document.getElementById('previewGrid');
+        const photoCount = document.getElementById('photoCount');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const successMessage = document.getElementById('successMessage');
+        const uploadedCount = document.getElementById('uploadedCount');
+        
+        let photos = [];
+        
+        // 위치 데이터
+        const locationData = {
+            'underpass': [
+                '한길 지하차도',
+                '한빛 지하차도',
+                '와동 지하차도',
+                '탑골 지하차도',
+                '심학산 지하차도',
+                '책향기 지하차도',
+                '산내 지하차도',
+                '교하 지하차도',
+                'gtx중앙 지하차도',
+                '가온 지하차도'
+            ],
+            'overpass': [
+                '오솔 육교',
+                '오름 육교',
+                '한빛 육교',
+                '한마루 육교',
+                '짚풀 육교',
+                '교하 육교',
+                '교하중앙공원 육교',
+                '동패 육교',
+                '한울 육교',
+                '해솔 육교'
+            ],
+            'eco-overpass': [
+                '직접 입력'
+            ],
+            'footbridge': [
+                '직접 입력'
+            ],
+            'etc': [
+                '천정구로',
+                '동패1교 하부 옹벽',
+                '직접 입력'
+            ]
+        };
+        
+        // 카테고리 선택 시
+        locationCategory.addEventListener('change', function() {
+            const category = this.value;
+            
+            if (category) {
+                locationDetailGroup.style.display = 'block';
+                locationDetail.innerHTML = '<option value="">세부 위치를 선택하세요</option>';
+                
+                // 해당 카테고리의 위치 목록 추가
+                locationData[category].forEach(loc => {
+                    const option = document.createElement('option');
+                    if (loc === '직접 입력') {
+                        option.value = 'custom';
+                        option.textContent = loc;
+                    } else {
+                        option.value = loc;
+                        option.textContent = loc;
+                    }
+                    locationDetail.appendChild(option);
+                });
+                
+                locationDetail.value = '';
+                customLocationInput.classList.remove('show');
+                customLocationInput.value = '';
+            } else {
+                locationDetailGroup.style.display = 'none';
+                locationDetail.value = '';
+                customLocationInput.classList.remove('show');
+                customLocationInput.value = '';
+            }
+            
+            updateFolderName();
+        });
+        
+        // 세부 위치 선택 시
+        locationDetail.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                customLocationInput.classList.add('show');
+                customLocationInput.focus();
+            } else {
+                customLocationInput.classList.remove('show');
+                customLocationInput.value = '';
+            }
+            updateFolderName();
+        });
+        
+        // 커스텀 위치 입력 시
+        customLocationInput.addEventListener('input', updateFolderName);
+        
+        // 작업 유형 선택 시
+        workTypeSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                customWorkInput.classList.add('show');
+                customWorkInput.focus();
+            } else {
+                customWorkInput.classList.remove('show');
+                customWorkInput.value = '';
+            }
+            updateFolderName();
+        });
+        
+        // 커스텀 작업 입력 시
+        customWorkInput.addEventListener('input', updateFolderName);
+        
+        // 폴더명 업데이트
+        function updateFolderName() {
+            let location = locationDetail.value;
+            let workType = workTypeSelect.value;
+            
+            // 위치 커스텀 입력 처리
+            if (location === 'custom') {
+                location = customLocationInput.value.trim();
+            }
+            
+            // 작업 유형 커스텀 입력 처리
+            if (workType === 'custom') {
+                workType = customWorkInput.value.trim();
+            }
+            
+            if (location && workType) {
+                const today = new Date();
+                const day = today.getDate();
+                const folder = `${day}일 ${location} ${workType}`;
+                folderName.textContent = folder;
+                folderPreview.style.display = 'block';
+                cameraBtn.disabled = false;
+                galleryBtn.disabled = false;
+            } else {
+                folderPreview.style.display = 'none';
+                cameraBtn.disabled = true;
+                galleryBtn.disabled = true;
+            }
+        }
+        
+        // 카메라 버튼 클릭 (바로 찍어 올리기)
+        cameraBtn.addEventListener('click', function() {
+            cameraInput.click();
+        });
+        
+        // 갤러리 버튼 클릭 (앨범에서 선택하기)
+        galleryBtn.addEventListener('click', function() {
+            galleryInput.click();
+        });
+        
+        // 카메라로 사진 촬영
+        cameraInput.addEventListener('change', function(e) {
+            handlePhotoSelection(e.target.files);
+            cameraInput.value = '';
+        });
+        
+        // 갤러리에서 사진 선택
+        galleryInput.addEventListener('change', function(e) {
+            handlePhotoSelection(e.target.files);
+            galleryInput.value = '';
+        });
+        
+        // 사진 선택 처리 (공통 함수)
+        function handlePhotoSelection(files) {
+            const fileArray = Array.from(files);
+            
+            fileArray.forEach(file => {
+                const reader = new FileReader();
+                const captureTime = new Date();
+                
+                reader.onload = function(event) {
+                    const photoData = {
+                        file: file,
+                        dataUrl: event.target.result,
+                        time: captureTime
+                    };
+                    photos.push(photoData);
+                    renderPhotos();
+                };
+                
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // 사진 미리보기 렌더링
+        function renderPhotos() {
+            previewGrid.innerHTML = '';
+            
+            if (photos.length > 0) {
+                photoCount.style.display = 'block';
+                photoCount.textContent = `📷 ${photos.length}장의 사진`;
+                uploadBtn.disabled = false;
+            } else {
+                photoCount.style.display = 'none';
+                uploadBtn.disabled = true;
+            }
+            
+            // 현재 위치와 작업 유형 가져오기
+            let location = locationDetail.value;
+            if (location === 'custom') {
+                location = customLocationInput.value.trim();
+            }
+            
+            let workType = workTypeSelect.value;
+            if (workType === 'custom') {
+                workType = customWorkInput.value.trim();
+            }
+            
+            photos.forEach((photo, index) => {
+                const div = document.createElement('div');
+                div.className = 'preview-item';
+                
+                const img = document.createElement('img');
+                img.src = photo.dataUrl;
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.textContent = '×';
+                removeBtn.onclick = function() {
+                    photos.splice(index, 1);
+                    renderPhotos();
+                };
+                
+                const timeLabel = document.createElement('div');
+                timeLabel.className = 'time-label';
+                
+                // 시간 포맷 (시분)
+                const hours = String(photo.time.getHours()).padStart(2, '0');
+                const minutes = String(photo.time.getMinutes()).padStart(2, '0');
+                const timeStr = `${hours}${minutes}`;
+                
+                // 파일명: 위치_작업내용_시분_001.jpg 형식
+                const fileNumber = String(index + 1).padStart(3, '0');
+                const fileName = `${location}_${workType}_${timeStr}_${fileNumber}.jpg`;
+                timeLabel.textContent = fileName;
+                
+                div.appendChild(img);
+                div.appendChild(removeBtn);
+                div.appendChild(timeLabel);
+                previewGrid.appendChild(div);
+            });
+        }
+        
+        // 업로드 버튼
+        uploadBtn.addEventListener('click', async function() {
+            if (photos.length === 0) return;
+            
+            // Google API 초기화 확인
+            if (!gapiInited || !gisInited) {
+                alert('Google API가 로딩 중입니다. 잠시 후 다시 시도해주세요.');
+                return;
+            }
+            
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '⏳ 업로딩중... 수고 많으셨습니다!';
+            
+            try {
+                // Google Drive 인증 및 업로드
+                await handleAuthClick();
+                await uploadToGoogleDrive();
+            } catch (err) {
+                console.error('업로드 실패:', err);
+                alert('업로드 중 오류가 발생했습니다: ' + (err.message || err));
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '드라이브에 업로드하기';
+            }
+        });
+    </script>
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+</body>
+</html>
